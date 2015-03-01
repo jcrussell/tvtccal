@@ -1,0 +1,40 @@
+tvtccal
+=======
+
+Utility to generate ical files from Tri-Valley Triathlon Club Calendar.
+
+
+http://www.trivalleytriclub.com/calendar
+
+
+Usage
+-----
+
+tvtccal [OPTION]...
+  -out="tvtc.ical": output file
+  -test="": test using a predownloaded HTML file
+
+
+Dependencies
+------------
+
+golang.org/x/net/html
+launchpad.net/xmlpath
+
+
+License
+-------
+
+TVTCCAL. Copyright (C) 2015 Jonathan Crussell
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see http://www.gnu.org/licenses/.
