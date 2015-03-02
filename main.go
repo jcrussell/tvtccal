@@ -101,7 +101,8 @@ func parseDayOfMonth(n *xmlpath.Node) int {
 		log.Fatal("failed to find day")
 	}
 
-	d, err := strconv.Atoi(strings.TrimSpace(val))
+	parts := strings.Split(strings.TrimSpace(val), " ")
+	d, err := strconv.Atoi(parts[len(parts)-1])
 	if err != nil {
 		log.Fatalf("failed to parse day: `%s`", val)
 	}
