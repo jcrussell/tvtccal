@@ -32,6 +32,9 @@ const (
 	TDPath     = `./td`
 )
 
+// Default timezone Location
+var Location *time.Location
+
 // Template for the output, an ical file
 const ICalTemplate = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -44,6 +47,7 @@ DTEND:{{.End}}
 SUMMARY:{{.Summary}}
 LOCATION:{{.Location}}
 UID:{{.Start}}-{{.End}}@trivalleytriclub.com
+SEQUENCE:0
 DTSTAMP:{{now}}
 END:VEVENT
 {{end}}END:VCALENDAR`
@@ -145,20 +149,32 @@ func parseWorkouts(base time.Time, n *xmlpath.Node) []*Workout {
 			return nil
 		}
 
-		d, err := time.ParseDuration(strings.Replace(parts[0], ":", "h", 1) + "m")
-		if err != nil {
+		hourmins := strings.Split(parts[0], ":")
+		if len(hourmins) != 2 {
+			log.Printf("unable to parse time as duration: `%s`", parts[0])
+			return nil
+		}
+		hour, err := strconv.Atoi(hourmins[0])
+		min, err2 := strconv.Atoi(hourmins[1])
+		if err != nil || err2 != nil {
 			log.Printf("unable to parse time as duration: `%s`", parts[0])
 			return nil
 		}
 
-		start := base.Add(d)
-
 		if parts[1] == "PM" {
-			start = start.Add(12 * time.Hour)
+			hour += 12
 		} else if parts[1] != "AM" {
 			log.Printf("expected AM/PM and not: `%s`", parts[1])
 			return nil
 		}
+
+		// Create the precise start date so that it should handle daylight savings
+		start := time.Date(
+			base.Year(), base.Month(), base.Day(), // Only care about date from base
+			hour, min, // Parsed from HTML
+			0, 0, // Seconds/nanoseconds
+			Location,
+		)
 
 		workouts = append(workouts, &Workout{
 			Summary:  strings.TrimSpace(lines[2]),
@@ -199,6 +215,7 @@ func writeCalendar(fname string, workouts []*Workout) error {
 // parseCalendar takes a parsed HTML tree and extracts all the workouts from
 // the main table.
 func parseCalendar(root *xmlpath.Node) ([]*Workout, error) {
+	var err error
 	var base time.Time
 	var workouts []*Workout
 
@@ -214,7 +231,7 @@ func parseCalendar(root *xmlpath.Node) ([]*Workout, error) {
 		year -= 1
 	}
 
-	loc, err := time.LoadLocation(Timezone)
+	Location, err = time.LoadLocation(Timezone)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +242,7 @@ func parseCalendar(root *xmlpath.Node) ([]*Workout, error) {
 
 		if i == 0 {
 			day := parseDayOfMonth(node)
-			base = time.Date(year, month, day, 0, 0, 0, 0, loc).UTC()
+			base = time.Date(year, month, day, 0, 0, 0, 0, Location).UTC()
 		}
 
 		if i%2 == 1 {
