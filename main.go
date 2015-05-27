@@ -179,8 +179,8 @@ func parseWorkouts(base time.Time, n *xmlpath.Node) []*Workout {
 		workouts = append(workouts, &Workout{
 			Summary:  strings.TrimSpace(lines[2]),
 			Location: strings.TrimSpace(strings.Join(loc, ", ")),
-			Start:    start.Format(ICalTimeFormat),
-			End:      start.Add(time.Minute * 90).Format(ICalTimeFormat),
+			Start:    start.UTC().Format(ICalTimeFormat),
+			End:      start.Add(time.Minute * 90).UTC().Format(ICalTimeFormat),
 		})
 
 		// Chop off already processed workout
@@ -242,7 +242,7 @@ func parseCalendar(root *xmlpath.Node) ([]*Workout, error) {
 
 		if i == 0 {
 			day := parseDayOfMonth(node)
-			base = time.Date(year, month, day, 0, 0, 0, 0, Location).UTC()
+			base = time.Date(year, month, day, 0, 0, 0, 0, Location)
 		}
 
 		if i%2 == 1 {
